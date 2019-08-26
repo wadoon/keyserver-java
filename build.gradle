@@ -1,0 +1,18 @@
+plugins {
+    id 'java'
+}
+
+group 'edu.kit.iti.formal'
+version '0.1'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.bladejava:blade-mvc:2.0.15.ALPHA'
+    implementation "org.jetbrains:annotations:17.0.0"
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
