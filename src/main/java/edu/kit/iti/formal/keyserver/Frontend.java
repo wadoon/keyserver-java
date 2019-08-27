@@ -24,7 +24,7 @@ public class Frontend {
     }
 
     private static void del(RouteContext routeContext) {
-        String e = routeContext.pathString("email");
+        String e = routeContext.pathString(":email");
         String k = routeContext.bodyToString();
         handleException(routeContext.response(), f -> {
             String token = backend.del(e, k);
