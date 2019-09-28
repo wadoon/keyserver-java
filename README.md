@@ -2,6 +2,19 @@
 
 A simple key server implementation for the [VerifyThis Long-term Challenge](https://verifythis.github.io/).
 
+## News 
+
+- (2019-09-29, 683be0d81364e8f6fbbc0670cef05fb2ea5f2e28)
+
+  I created a barebone version, which does not use any HTTP library or stack.
+  The barebone version uses the Java's Socket API, parses HTTP and routes by
+  itself. see `HttpServer.java`.
+  
+  The routing is special to this project, but the HTTP should be general.
+  Multi-part request are not supported.
+  
+  It could be fun to find a way to verify custom parsing code. 
+
 ## Getting Started
 
 Use the Gradle Import of your favourite IDE. On the command line you can just compile and run the tests.
@@ -37,3 +50,5 @@ This server implements `get`, `add`, `del` with their confirm counter-parts.
 * **GET** `/del!/:token`
 
   Finally deletes the association from the email-key database. 
+
+
