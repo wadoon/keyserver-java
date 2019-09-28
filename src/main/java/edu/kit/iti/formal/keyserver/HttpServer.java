@@ -2,10 +2,7 @@ package edu.kit.iti.formal.keyserver;
 
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Date;
@@ -35,11 +32,13 @@ public class HttpServer implements Runnable {
         //Waiting for requests
         try {
             ServerSocket socket = new ServerSocket(9000); //bind on 0.0.0.0:8000
-            Socket clientSocket = socket.accept();
-            System.out.format("Incoming request %s\n", clientSocket.getInetAddress());
-            RequestHandler handler = new RequestHandler(clientSocket);
-            Thread t = new Thread(handler);
-            t.start();
+            while (true) {
+                Socket clientSocket = socket.accept();
+                System.out.format("Incoming request %s\n", clientSocket.getInetAddress());
+                RequestHandler handler = new RequestHandler(clientSocket);
+                Thread t = new Thread(handler);
+                t.start();
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -54,12 +53,74 @@ public class HttpServer implements Runnable {
 
         public void run() {
             try (InputStream is = clientSocket.getInputStream()) {
-                String req = new String(is.readAllBytes());
-                Request request = Request.parse(req);
+                Request request = parse(is);
                 dispatchRequest(request, clientSocket.getOutputStream());
             } catch (IOException ex) {
                 ex.printStackTrace();
+            } finally {
+                try {
+                    clientSocket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
+        }
+
+        /**
+         * <pre>
+         * Request = request-line; ((general-header; request-header; entity-header ) CRLF) ;
+         * CRLF [ message-body ] ;
+         * </pre>
+         * <p>
+         * Example:
+         * <pre>
+         * GET /path/file.html HTTP/1.1
+         * Host: www.host1.com:80
+         * User-Agent: MyBrowser/1.0
+         * [blank line here]
+         * </pre>
+         *
+         * @param is a
+         * @return
+         */
+        private Request parse(InputStream is) throws IOException {
+            Request r = new Request();
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            String line;
+            int state = 0; //firstLine, header, body
+            loop:
+            while ((line = br.readLine()) != null) {
+                switch (state) {
+                    case 0:
+                        String[] splitFirstLine = line.split(" ");
+                        if (splitFirstLine.length != 3)
+                            throw new RuntimeException("Malformed header");
+                        r.method = splitFirstLine[0];
+                        r.path = splitFirstLine[1];
+                        r.protocol = splitFirstLine[2];
+                        state = 1;
+                        break;
+                    case 1:
+                        if (line.isBlank()) {
+                            state = 2;
+                            break loop;
+                        }
+                        String[] kv = line.split(": ", 2);
+                        if (kv.length != 2)
+                            throw new RuntimeException("Malformed header");
+                        r.header.put(kv[0], kv[1]);
+                        break;
+                }
+            }
+            int contentLength =
+                    Integer.parseInt(
+                            r.getHeader().getOrDefault("Content-Length", "0"));
+            if (contentLength > 0) {
+                char[] buffer = new char[contentLength];
+                int read = br.read(buffer);
+                r.body = new String(buffer, 0, read);
+            }
+            return r;
         }
 
         private void dispatchRequest(Request request, OutputStream o) {
