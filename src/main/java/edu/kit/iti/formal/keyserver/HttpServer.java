@@ -15,12 +15,21 @@ public class HttpServer implements Runnable {
     private final Thread thread;
     private final Backend backend = new Backend();
 
-    private HttpServer() {
+    private HttpServer(File storage) throws IOException, ClassNotFoundException {
+        backend.load(storage);
         thread = new Thread(this);
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                backend.save(storage);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }));
     }
 
-    public static void main(String[] args) {
-        new HttpServer().start();
+    public static void main(String[] args) throws IOException, ClassNotFoundException {
+        File defaultFile = new File("emailkey.db");
+        new HttpServer(defaultFile).start();
     }
 
     private void start() {

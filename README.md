@@ -2,7 +2,13 @@
 
 A simple key server implementation for the [VerifyThis Long-term Challenge](https://verifythis.github.io/).
 
+*Note:* This implementation is not thread-safe if multiple request need to handled. 
+
 ## News 
+
+- (2020-10-09, )
+
+  Added a serialization support. 
 
 - (2019-09-29, 683be0d81364e8f6fbbc0670cef05fb2ea5f2e28)
 
@@ -14,6 +20,7 @@ A simple key server implementation for the [VerifyThis Long-term Challenge](http
   Multi-part request are not supported.
   
   It could be fun to find a way to verify custom parsing code. 
+
 
 ## Getting Started
 

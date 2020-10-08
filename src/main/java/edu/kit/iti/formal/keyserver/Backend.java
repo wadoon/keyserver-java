@@ -3,6 +3,7 @@ package edu.kit.iti.formal.keyserver;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.*;
 import java.util.*;
 
 /**
@@ -75,13 +76,37 @@ public class Backend {
                 .findAny();
     }
 
-
     private static class EmailKey {
         public final String email, key;
 
         private EmailKey(String email, String key) {
             this.email = email;
             this.key = key;
+        }
+    }
+
+    public void save(File file) throws IOException {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
+            oos.writeObject(database);
+            oos.writeObject(waitConfirmAdd);
+            oos.writeObject(waitConfirmDel);
+        }
+    }
+
+    public void load(File file) throws IOException, ClassNotFoundException {
+        try (ObjectInputStream oos = new ObjectInputStream(new FileInputStream(file))) {
+            List<EmailKey> database = (List<EmailKey>) oos.readObject();
+            Map<String, EmailKey> waitConfirmAdd = (Map<String, EmailKey>) oos.readObject();
+            Map<String, EmailKey> waitConfirmDel = (Map<String, EmailKey>) oos.readObject();
+
+            this.database.clear();
+            this.database.addAll(database);
+
+            this.waitConfirmAdd.clear();
+            this.waitConfirmAdd.putAll(waitConfirmAdd);
+
+            this.waitConfirmDel.clear();
+            this.waitConfirmDel.putAll(waitConfirmDel);
         }
     }
 }

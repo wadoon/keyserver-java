@@ -10,16 +10,16 @@ import java.util.function.Consumer;
  * @author Alexander Weigl
  * @version 1 (26.08.19)
  */
-public class Frontend {
+public class BladeFrontend {
     private static Backend backend = new Backend();
 
     public static void main(String[] args) {
         Blade.of()
-                .get("/get/:email", Frontend::get)
-                .post("/add/:email", Frontend::add)
-                .get("/add!/:token", Frontend::addc)
-                .post("/del/:email", Frontend::del)
-                .get("/del!/:token", Frontend::delc)
+                .get("/get/:email", BladeFrontend::get)
+                .post("/add/:email", BladeFrontend::add)
+                .get("/add!/:token", BladeFrontend::addc)
+                .post("/del/:email", BladeFrontend::del)
+                .get("/del!/:token", BladeFrontend::delc)
                 .start();
     }
 
